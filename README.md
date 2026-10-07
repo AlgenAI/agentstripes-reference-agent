@@ -38,6 +38,16 @@ python -m pytest -q
 
 The tests use a scripted model, so they need no API key. They cover the approval step for refunds.
 
+## Evaluate it
+
+`evals/cases.jsonl` holds 12 cases drawn from real support work: policy questions, order lookups, refunds that should and shouldn't happen, requests to hand over, and an attempt to talk the agent out of its rules. `evals/run.py` runs the real agent on each and scores it:
+
+```bash
+OPENAI_API_KEY=... python evals/run.py
+```
+
+The latest results are in `evals/results.json`. Results vary a little between runs, so run it more than once before trusting a change.
+
 ## Safeguards
 
 - **Refunds need a person.** Before any refund, the agent pauses and the operator must type `y` to approve it. Anything else declines it, and the customer is told a colleague will follow up.

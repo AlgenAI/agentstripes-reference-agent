@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+- An evaluation set of 12 cases and a runner that scores the real agent.
+- The system prompt now states the refund policy and what the agent hands to a person; the eval set caught both gaps.
+
 ## 0.4.0
 - Every refund now waits for a person's approval; declined refunds are reported to the customer.
 - Each run stops after 12 steps, and each model call times out after 30 seconds.

@@ -1,0 +1,5 @@
+[
+  {"id": "kb-1", "title": "Refund policy", "body": "Orders can be refunded within 30 days of delivery. Refunds over 200 need a manager."},
+  {"id": "kb-2", "title": "Shipping times", "body": "Standard shipping takes 3 to 5 working days. Express takes 1 to 2."},
+  {"id": "kb-3", "title": "Changing an address", "body": "An address can be changed until the order is packed."}
+]

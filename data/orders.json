@@ -1,0 +1,5 @@
+{
+  "A-1001": {"customer": "demo-customer-1", "total": 48.0, "status": "delivered", "delivered_days_ago": 4, "refunded": 0},
+  "A-1002": {"customer": "demo-customer-2", "total": 260.0, "status": "delivered", "delivered_days_ago": 12, "refunded": 0},
+  "A-1003": {"customer": "demo-customer-3", "total": 19.5, "status": "packed", "delivered_days_ago": null, "refunded": 0}
+}

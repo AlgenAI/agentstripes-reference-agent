@@ -22,12 +22,21 @@ You need Python 3.11 or newer and an OpenAI API key.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt   # exact, pinned versions
 export OPENAI_API_KEY=...   # your own key; never commit it
 python agent.py
 ```
 
 Type a customer message at the `>` prompt. Press Ctrl+C to stop.
+
+## Test it
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+The tests use a scripted model, so they need no API key. They cover the approval step for refunds.
 
 ## Safeguards
 

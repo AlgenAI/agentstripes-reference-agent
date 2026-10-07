@@ -6,12 +6,17 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
+from langgraph.types import Command, interrupt
 
 log = logging.getLogger("support_desk")
 DATA = Path(__file__).parent / "data"
 KB = json.loads((DATA / "kb.json").read_text())
 ORDERS_FILE = DATA / "orders.json"
+# Every run stops after this many graph steps, and every model call after this many seconds.
+MAX_STEPS = 12
+MODEL_TIMEOUT_SECONDS = 30
 
 
 def load_orders() -> dict:
@@ -55,6 +60,10 @@ def issue_refund(order_id: str, amount: float) -> str:
         return f"Refund not issued: no order with id {order_id!r}."
     if amount <= 0 or amount > order["total"] - order["refunded"]:
         return f"Refund not issued: {amount} is outside what can be refunded on {order_id}."
+    # Money leaves the shop here, so a person approves every refund before it happens.
+    decision = interrupt({"action": "refund", "order_id": order_id, "amount": amount, "question": f"Approve a refund of {amount} on {order_id}?"})
+    if decision != "approve":
+        return f"Refund not issued: a person declined the refund on {order_id}. Tell the customer a colleague will follow up."
     try:
         order["refunded"] += amount
         ORDERS_FILE.write_text(json.dumps(orders, indent=2))
@@ -65,14 +74,25 @@ def issue_refund(order_id: str, amount: float) -> str:
 
 
 agent = create_react_agent(
-    ChatOpenAI(model="gpt-4o-mini"),
+    ChatOpenAI(model="gpt-4o-mini", timeout=MODEL_TIMEOUT_SECONDS, max_retries=2),
     [search_kb, lookup_order, issue_refund],
     prompt="You are a helpful support agent. Help the customer with whatever they need.",
+    checkpointer=MemorySaver(),
 )
+
+
+def run(message: str, thread_id: str = "cli") -> str:
+    """Handle one customer message, asking the operator to approve any refund first."""
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_STEPS}
+    out = agent.invoke({"messages": [("user", message)]}, config)
+    while out.get("__interrupt__"):
+        request = out["__interrupt__"][0].value
+        answer = input(f"[approval needed] {request['question']} [y/N] ").strip().lower()
+        out = agent.invoke(Command(resume="approve" if answer == "y" else "decline"), config)
+    return out["messages"][-1].content
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     while True:
-        msg = input("> ")
-        out = agent.invoke({"messages": [("user", msg)]})
-        print(out["messages"][-1].content)
+        print(run(input("> ")))

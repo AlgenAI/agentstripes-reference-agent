@@ -28,3 +28,8 @@ python agent.py
 ```
 
 Type a customer message at the `>` prompt. Press Ctrl+C to stop.
+
+## Safeguards
+
+- **Refunds need a person.** Before any refund, the agent pauses and the operator must type `y` to approve it. Anything else declines it, and the customer is told a colleague will follow up.
+- **Runs are bounded.** Each message stops after 12 graph steps, and each model call times out after 30 seconds.
